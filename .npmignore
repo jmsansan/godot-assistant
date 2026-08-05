@@ -1,0 +1,10 @@
+src/
+test/
+scripts/
+docs/
+.github/
+tsconfig.json
+CONTRIBUTING.md
+SECURITY.md
+CHANGELOG.md
+RELEASING.md

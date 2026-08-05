@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jmsansan.github.io/godot-assistant/sitemap.xml

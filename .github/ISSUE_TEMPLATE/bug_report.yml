@@ -1,0 +1,42 @@
+name: Bug report
+description: Something behaved incorrectly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If a scene file was written incorrectly, please attach the `.tscn` before
+        and after. That is by far the most useful thing for diagnosing this project.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: The tool call you made, and what it returned.
+      placeholder: |
+        Called node_add with { "scene": "res://main.tscn", ... }
+        Expected ..., got ...
+    validations: {required: true}
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `doctor`
+      description: "Run: npx godot-assistant doctor --project /path/to/project"
+      render: text
+    validations: {required: true}
+  - type: input
+    id: client
+    attributes:
+      label: MCP client
+      placeholder: Claude Code 2.1 / Codex CLI / Cursor / Claude Desktop
+    validations: {required: true}
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: macOS 15.2 (Apple Silicon) / Windows 11 / Ubuntu 24.04
+    validations: {required: true}
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: A small project that reproduces it, or the steps to build one.

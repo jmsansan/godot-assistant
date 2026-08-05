@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      # Required for npm trusted publishing. The OIDC token proves this tarball
+      # was built by this workflow from this commit, and npm exchanges it for a
+      # short-lived publish credential. No long-lived NPM_TOKEN is stored.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+      - name: Check the tag matches package.json
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "Tag $TAG does not match package.json version $PKG" >&2
+            exit 1
+          fi
+
+      # Node 22 ships npm 10.x, and the OIDC exchange needs 11.5 or newer.
+      - name: Ensure npm is new enough for trusted publishing
+        run: npm install -g npm@latest
+
+      # npm versions are immutable, so publishing one that already exists is a
+      # hard error. That happens legitimately twice: the bootstrap release, which
+      # has to be published by hand before a trusted publisher can be configured,
+      # and any re-run of this workflow. Skip instead of failing.
+      - name: Is this version already on the registry?
+        id: published
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "godot-assistant@${VERSION}" version >/dev/null 2>&1; then
+            echo "Version ${VERSION} is already published, skipping publish."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Requires a trusted publisher configured once at
+      # npmjs.com/package/godot-assistant/access, pointing at this repository
+      # and this workflow filename. See RELEASING.md.
+      - name: Publish with provenance
+        if: steps.published.outputs.exists == 'false'
+        run: npm publish --provenance --access public
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            Install:
+
+            ```bash
+            claude mcp add godot-assistant -- npx -y godot-assistant@${{ github.ref_name }} --project /path/to/game
+            ```
+
+            See [CHANGELOG.md](https://github.com/jmsansan/godot-assistant/blob/main/CHANGELOG.md) for details.

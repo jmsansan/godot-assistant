@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 4.7.1
+
+jobs:
+  build:
+    name: Type-check and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  e2e:
+    name: End-to-end (Godot ${{ matrix.godot }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest supported and current. The engine is the dependency most likely
+        # to break this project, so both ends of the range are exercised.
+        godot: ["4.3", "4.7.1"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Godot ${{ matrix.godot }}
+        run: |
+          set -euo pipefail
+          VERSION="${{ matrix.godot }}"
+          URL="https://github.com/godotengine/godot/releases/download/${VERSION}-stable/Godot_v${VERSION}-stable_linux.x86_64.zip"
+          curl -fsSL -o godot.zip "$URL"
+          unzip -q godot.zip
+          BIN="$(find . -maxdepth 1 -name 'Godot_v*_linux.x86_64' -type f | head -n1)"
+          chmod +x "$BIN"
+          echo "GODOT_PATH=$(realpath "$BIN")" >> "$GITHUB_ENV"
+
+      - name: Install rendering dependencies
+        # Scene and game screenshots need a real renderer, so the suite runs
+        # under a virtual display rather than skipping those checks.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            xvfb libgl1 libglu1-mesa libxcursor1 libxinerama1 libxrandr2 \
+            libxi6 libasound2t64 libpulse0 libudev1 fontconfig
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Verify engine is reachable
+        run: node dist/index.js doctor
+
+      - name: Run end-to-end suite
+        run: xvfb-run -a --server-args="-screen 0 1280x960x24" npm test

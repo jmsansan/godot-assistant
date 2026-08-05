@@ -1,0 +1,61 @@
+{
+  "name": "godot-assistant",
+  "version": "1.0.0",
+  "description": "Production-grade MCP server for the Godot Engine. Lets AI coding agents inspect, edit, run, and visually verify Godot 4 projects.",
+  "type": "module",
+  "license": "MIT",
+  "author": "jmsansan",
+  "homepage": "https://jmsansan.github.io/godot-assistant/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmsansan/godot-assistant.git"
+  },
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "godot",
+    "godot-engine",
+    "gamedev",
+    "claude",
+    "codex",
+    "ai",
+    "gdscript"
+  ],
+  "bin": {
+    "godot-assistant": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "godot",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc && node scripts/postbuild.mjs",
+    "watch": "tsc --watch",
+    "prepare": "npm run build",
+    "test": "node test/qa.mjs",
+    "doctor": "node dist/index.js doctor",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  },
+  "bugs": {
+    "url": "https://github.com/jmsansan/godot-assistant/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

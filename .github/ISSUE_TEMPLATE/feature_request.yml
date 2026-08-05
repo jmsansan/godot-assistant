@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest a capability
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tool count is a deliberate budget — every tool definition is billed to the
+        agent's context on every request, and accuracy drops past roughly 30 tools.
+        Proposals that extend an existing tool are much more likely to be accepted
+        than proposals that add a new one.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: The task you want an agent to accomplish, not the API you want.
+    validations: {required: true}
+  - type: textarea
+    id: today
+    attributes:
+      label: What happens today
+      description: Which existing tools fall short, and how.
+    validations: {required: true}
+  - type: dropdown
+    id: bridge
+    attributes:
+      label: Would this need the live bridge?
+      options: ["No — works from the command line", "Yes — needs a running editor or game", "Not sure"]
+    validations: {required: true}
