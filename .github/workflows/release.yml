@@ -59,8 +59,9 @@ jobs:
           fi
 
       # Requires a trusted publisher configured once at
-      # npmjs.com/package/godot-assistant/access, pointing at this repository
-      # and this workflow filename. See RELEASING.md.
+      # npmjs.com/package/godot-assistant/access -> Trusted Publisher, pointing
+      # at this repository and this workflow filename, with "Allow npm publish"
+      # ticked. No NPM_TOKEN is needed or stored.
       - name: Publish with provenance
         if: steps.published.outputs.exists == 'false'
         run: npm publish --provenance --access public
